@@ -1,0 +1,73 @@
+meta:
+  schema: v0.0.1
+name: example
+auth:
+  type: basic
+models:
+  - name: Tenant
+    description: 租户
+    fields:
+      - name: user
+        type: user
+  - name: Customer
+    description: 消费者
+  - name: Product
+    description: 产品
+    fields:
+      - name: name
+        type: string
+        description: 产品名称
+  - name: CodeBatch
+    description: 防伪码批次
+    fields:
+  - name: Code
+    description: 防伪码
+    fields:
+      - name: code
+        type: string
+        description: 防伪码编号
+      - name: batch
+        target: CodeBatch
+        type: reference
+  - name: Statistics
+    fields:
+  - name: QRCode
+    fields:
+      - name: identity
+        type: string
+  - name: QRScanRecord
+    description:
+    fields:
+      - name: code
+        type: reference
+        target: Code
+      - name: Customer
+        type: reference
+        target: Customer
+api:
+  endpoints:
+    - name: version
+      path: /version
+      type: string
+      response: "0.0.1"
+    - name: fstab
+      path: /fstab
+      type: localfile
+      localfile: /etc/fstab
+    - name: products
+      path: /product
+      type: model
+      model: Product
+    - name: top-secret
+      path: /top-secret
+      type: string
+      response: "this is a top secret"
+      access:
+        - role: admin
+    - name: secret
+      path: /secret
+      type: string
+      response: "this is a secret invisible to public access"
+      access:
+        - action: deny
+          role: anonymous

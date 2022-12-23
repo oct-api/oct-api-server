@@ -1,0 +1,11 @@
+site_name: Oct-API Documentation
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: orange
+extra_javascript:
+  - javascripts/gtag.js

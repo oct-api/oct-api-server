@@ -1,0 +1,50 @@
+meta:
+  schema: v0.0.1
+name: todolist
+models:
+  - name: TodoItem
+    description: Record of an item on the todo list
+    fields:
+      - name: subject
+        type: string
+        description: Todo item subject
+      - name: description
+        type: string
+        optional: true
+        description: Todo item description
+      - name: done
+        type: boolean
+        description: Item done
+        optional: true
+      - name: create_time
+        type: datetime
+        auto_now: true
+        optional: true
+        description: Item create time
+      - name: update_time
+        type: datetime
+        auto_now: true
+        optional: true
+        description: Item update time
+      - name: list
+        type: reference
+        target: TodoList
+        optional: true
+        description: Todo list which this item belongs to
+  - name: TodoList
+    description: Record of a todo list
+    fields:
+      - name: name
+        type: string
+        description: Todo list name
+api:
+  default_access: allow
+  endpoints:
+    - name: todo
+      path: /todo
+      type: model
+      model: TodoItem
+    - name: list
+      path: /list
+      type: model
+      model: TodoList

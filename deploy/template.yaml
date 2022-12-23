@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: oct-api
+  name: oct-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oct-api
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: oct-api
+    spec:
+      containers:
+      - image: registry.gitlab.com/famzheng/oct-api:{OCT_IMAGE}
+        name: main
+        env:
+          - name: OCT_DOMAIN_NAME
+            value: {OCT_DOMAIN_NAME}
+        ports:
+          - containerPort: 3000
+            name: http
+        volumeMounts:
+          - mountPath: /data/oct
+            name: data
+          - mountPath: /oct/secrets/github-oauth
+            name: github-oauth-client
+      restartPolicy: Always
+      volumes:
+      - name: data
+        hostPath:
+          path: /work/data/oct/{OCT_ENV}
+          type: DirectoryOrCreate
+      - name: github-oauth-client
+        secret:
+          defaultMode: 420
+          secretName: github-oauth-client
+      imagePullSecrets:
+      - name: regkey
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: oct-api
+  name: oct-api
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: oct-api
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: oct-api
+  name: oct-api
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls.certresolver: myresolver
+spec:
+  rules:
+  - host: {OCT_DOMAIN_NAME}
+    http:
+      paths:
+      - backend:
+          service:
+            name: oct-api
+            port:
+              name: http
+        path: /
+        pathType: ImplementationSpecific
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: oct-api
+  name: oct-api-http
+spec:
+  rules:
+  - host: {OCT_DOMAIN_NAME}
+    http:
+      paths:
+      - backend:
+          service:
+            name: oct-api
+            port:
+              name: http
+        path: /
+        pathType: ImplementationSpecific
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: regkey
+data:
+  .dockerconfigjson: ewogICAgICAgICJhdXRocyI6IHsKICAgICAgICAgICAgICAgICJyZWdpc3RyeS5naXRsYWIuY29tIjogewogICAgICAgICAgICAgICAgICAgICAgICAiYXV0aCI6ICJabUZ0ZW1obGJtYzZaMnh3WVhRdFlWZzNRV295VG1FNVdFNXplWHBqV0hselprZz0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgfQp9Cgo=
+type: kubernetes.io/dockerconfigjson

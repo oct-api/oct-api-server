@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -x
+session=oct-$$
+tmux new-session -d -s $session
+tmux new-window -t $session:1 "cd ui; npm run serve"
+tmux split-window -t $session:1 "cargo run"
+tmux attach-session -t $session:1

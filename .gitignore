@@ -1,0 +1,5 @@
+/target
+/build
+/secrets
+/doc/site
+/deploy/*.kubeconfig

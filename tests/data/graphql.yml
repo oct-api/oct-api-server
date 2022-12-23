@@ -1,0 +1,22 @@
+meta:
+  schema: v0.0.1
+name: demo
+models:
+  - name: user
+    description: Record of an item on the todo list
+    fields:
+      - name: username
+        type: string
+        description: User name
+      - name: password
+        type: string
+        description: Password
+      - name: email
+        type: string
+        description: User email
+api:
+  default_access: allow
+  endpoints:
+    - name: graphql
+      path: /graphql
+      type: graphql

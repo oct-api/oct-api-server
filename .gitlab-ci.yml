@@ -1,0 +1,68 @@
+stages:
+  - build-and-test
+  - build-docker
+  - deploy-preview
+  - deploy-prod
+
+test:
+  stage: build-and-test
+  tags:
+    - shell
+  script:
+    - pip3 install -r orm/requirements.txt
+    - make test
+  cache:
+    - key: test
+      paths:
+        - target
+        - ui/node_modules
+
+build:
+  stage: build-and-test
+  tags:
+    - shell
+  script:
+    - pip3 install -r orm/requirements.txt
+    - pip3 install mkdocs-material
+    - make build DEBUG=
+  artifacts:
+    paths:
+      - build
+  cache:
+    - key: release
+      paths:
+        - target
+        - ui/node_modules
+
+build-docker:
+  stage: build-docker
+  dependencies:
+    - build
+  tags:
+    - shell
+  script:
+    - git fetch
+    - git fetch --tags
+    - make docker
+
+preview:
+  stage: deploy-preview
+  tags:
+    - shell
+  script:
+    - git fetch
+    - git fetch --tags
+    - make deploy OCT_ENV=preview DEBUG=
+  only:
+    - dev
+
+prod:
+  stage: deploy-prod
+  tags:
+    - shell
+  script:
+    - git fetch
+    - git fetch --tags
+    - make deploy OCT_ENV=prod DEBUG= TOKEN=$KUBECONFIG_TOKEN_PROD
+  only:
+    - master
